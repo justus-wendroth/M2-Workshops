@@ -27,6 +27,20 @@ repository.init().then(() => {
     res.render("workshop");
   });
 
+  app.get("/update-workshop", function (req, res) {
+    const workshopName = req.query.name;
+    console.log(workshopName);
+    repository
+      .getWorkshopByName(workshopName)
+      .then((workshop) => {
+        if (!workshop) {
+          return res.status(404).send("Workshop not found");
+        }
+        res.render("update-workshop", { workshop: workshop });
+      })
+      .catch((e) => res.send(e.message));
+  });
+
   app.post("/workshop", function (req, res) {
     const name = req.body.name;
     const description = req.body.description;
@@ -53,11 +67,28 @@ repository.init().then(() => {
   });
 
   app.post("/remove-workshop", function (req, res) {
-    res.status(500).send("TODO");
+    const name = req.body.name;
+    repository
+      .removeWorkshopByName(name)
+      .then(() => {
+        res.redirect("/");
+      })
+      .catch((e) => res.send(e.message));
   });
 
   app.post("/update-workshop", function (req, res) {
-    res.status(500).send("TODO");
+    const name = req.body.name;
+    const description = req.body.description;
+    repository
+      .updateWorkshop(name, description)
+      .then(() => {
+        repository.getWorkshopList().then((workshops) => {
+          res.render("index", {
+            workshops: workshops,
+          });
+        });
+      })
+      .catch((e) => res.send(e.message));
   });
 
   app.listen(3000, function () {
